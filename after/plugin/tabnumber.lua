@@ -57,8 +57,11 @@ function make_tabeline()
             new_line = new_line .. '%#TabLine#'
         end
 
+        -- make tabs clickable
+        new_line = new_line .. '%' .. i .. 'T'
+
         -- Add label name
-        new_line = new_line .. '' .. i ..  '[' .. make_label(tab) .. ']%#TabLine# '
+        new_line = new_line .. '' .. i ..  ' ' .. make_label(tab) .. '%#TabLine#  '
     end
 
     return new_line
