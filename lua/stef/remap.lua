@@ -32,3 +32,15 @@ vim.api.nvim_create_autocmd("FileType", {
     -- vim.keymap.set("n", "<C-t>", "", { buffer = 0 })
   end,
 })
+
+-- Search current keyword - fix this
+vim.keymap.set('n', '<leader>/', function()
+    vim.fn.search('end')
+    vim.cmd('normal! viw')
+    vim.cmd('visual! "ry')
+    local keyword = vim.fn.getreg('r')
+    print("New")
+    print(keyword)
+    vim.cmd('normal! /'..keyword)
+end, { noremap = true, silent = true })
+
