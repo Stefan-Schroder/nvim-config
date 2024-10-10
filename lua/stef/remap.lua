@@ -42,3 +42,9 @@ end)
 vim.keymap.set('n', '<leader>?', function()
     vim.fn.feedkeys('/'..vim.fn.expand('<cWORD>'))
 end)
+
+-- Force reference
+vim.keymap.set('n', '<leader>R', function()
+    print("Refreshing")
+    ColorMyPencils()
+end)

@@ -54,14 +54,14 @@ function make_tabeline()
         if (tab == current) then
             new_line = new_line .. '%#PmenuThumb# '
         else
-            new_line = new_line .. '%#TabLine#'
+            new_line = new_line .. '%#StatusLine#'
         end
 
         -- make tabs clickable
         new_line = new_line .. '%' .. i .. 'T'
 
         -- Add label name
-        new_line = new_line .. '' .. i ..  ' ' .. make_label(tab) .. ' %#TabLine# '
+        new_line = new_line .. '' .. i ..  ' ' .. make_label(tab) .. ' %#StatusLine# '
     end
 
     return new_line
