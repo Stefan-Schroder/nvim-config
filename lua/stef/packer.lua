@@ -46,6 +46,7 @@ return require('packer').startup(function(use)
 
     -- Random
     use ('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
+    use ('tpope/vim-commentary')
     use ('mbbill/undotree')
     use ('tpope/vim-fugitive')
     use ('chrisbra/csv.vim')

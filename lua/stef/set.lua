@@ -36,3 +36,14 @@ vim.opt.ignorecase = true
 -- set the timeout of pattern matching
 vim.g.matchparen_timeout = 2
 vim.g.matchparen_insert_timeout = 2
+
+-- Enable filetype detection, plugins, and indentation
+vim.cmd('filetype plugin indent on')
+
+-- Set the commentstring for C, C++, C#, and Java filetypes
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "c", "cpp", "cs", "java" },
+  callback = function()
+    vim.opt_local.commentstring = "// %s"
+  end,
+})
