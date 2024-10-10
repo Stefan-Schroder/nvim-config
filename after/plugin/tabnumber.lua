@@ -52,7 +52,7 @@ function make_tabeline()
     for i, tab in ipairs(tabs) do
         -- Highlight selected tab
         if (tab == current) then
-            new_line = new_line .. '%#PmenuThumb#'
+            new_line = new_line .. '%#PmenuThumb# '
         else
             new_line = new_line .. '%#TabLine#'
         end
@@ -61,7 +61,7 @@ function make_tabeline()
         new_line = new_line .. '%' .. i .. 'T'
 
         -- Add label name
-        new_line = new_line .. '' .. i ..  ' ' .. make_label(tab) .. '%#TabLine#  '
+        new_line = new_line .. '' .. i ..  ' ' .. make_label(tab) .. ' %#TabLine# '
     end
 
     return new_line
