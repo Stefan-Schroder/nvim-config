@@ -33,14 +33,12 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Search current keyword - fix this
+-- start searching for current word
 vim.keymap.set('n', '<leader>/', function()
-    vim.fn.search('end')
-    vim.cmd('normal! viw')
-    vim.cmd('visual! "ry')
-    local keyword = vim.fn.getreg('r')
-    print("New")
-    print(keyword)
-    vim.cmd('normal! /'..keyword)
-end, { noremap = true, silent = true })
+    vim.fn.feedkeys('/'..vim.fn.expand('<cword>'))
+end)
 
+-- start searching for current WORD
+vim.keymap.set('n', '<leader>?', function()
+    vim.fn.feedkeys('/'..vim.fn.expand('<cWORD>'))
+end)
