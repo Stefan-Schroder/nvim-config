@@ -24,6 +24,12 @@ vim.keymap.set("n", "<C-H>", "<C-W><C-H>")
 -- Make file executable
 vim.keymap.set("n", "<leader>mx", "<cmd>!chmod +x %<CR>", { silent = true })
 
+-- Stefs Dumb way of making a file
+-- vim.keymap.set("n", "<leader>mi", "<cmd>!sudo -A cmd mi_compiled<CR>", {silent = false})
+vim.keymap.set("n", "<leader>mi", function()
+  vim.cmd("!export SUDO_ASKPASS=/usr/bin/ssh-askpass && sudo echo 'Making' && make -j 8 && sudo make install")
+end)
+
 -- Quick fix window remap
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",

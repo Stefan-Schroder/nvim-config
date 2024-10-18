@@ -43,6 +43,7 @@ return require('packer').startup(function(use)
 
     -- Random
     use ('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
+    use ('voldikss/vim-floaterm')
     use ('tpope/vim-commentary')
     use ('mbbill/undotree')
     use ('tpope/vim-fugitive')

@@ -46,7 +46,7 @@ require('copilot').setup({
 -- copilot chat
 local chat = require("CopilotChat")
 chat.setup({
-    debug = true,
+    debug = false,
     mappings = {
         -- complete = {
         --     detail = 'Use @<Tab> or /<Tab> for options.',
@@ -89,7 +89,7 @@ chat.setup({
 vim.keymap.set({'n', 'v'}, '<leader>ct', function()
     chat.toggle({
         window = {
-            layout = 'float',
+            layout = 'horizontal',
             title = 'ChatGPT in my screen',
             relative = 'editor',
             row = 0,
