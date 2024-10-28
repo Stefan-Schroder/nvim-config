@@ -43,8 +43,35 @@ vim.keymap.set('n', '<leader>?', function()
     vim.fn.feedkeys('/'..vim.fn.expand('<cWORD>'))
 end)
 
--- Force reference
+-- Force refresh colours
 vim.keymap.set('n', '<leader>R', function()
     print("Refreshing")
     ColorMyPencils()
 end)
+
+vim.keymap.set('n', 'zfa{', function()
+    local ts = vim.treesitter
+    local ts_utils = require 'nvim-treesitter.ts_utils'
+
+    local parser = ts.get_parser()
+    local tree = parser:parse()[1]
+    local root = tree:root()
+
+    local query = ts.parse_query(
+    vim.bo.filetype,
+    [[
+    (function_declaration) @function
+    (function_definition) @function
+    (method_declaration) @function
+    (method_definition) @function
+    ]]
+    )
+
+    print(query)
+
+    for _, node in query:iter_captures(root, 0, 0, -1) do
+        local start_line, _, end_line, _ = ts_utils.get_node_range(node)
+        vim.cmd(start_line + 1 .. "," .. end_line + 1 .. "fold")
+    end
+end)
+

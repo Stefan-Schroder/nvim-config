@@ -34,3 +34,8 @@ vim.keymap.set('n', '<leader>tmi', function()
       vim.cmd("FloatermShow --name=compiler")
 end, {noremap=true, silent=true})
 
+vim.keymap.set('n', '<leader>test', function()
+    local hi = vim.cmd("FloatermSend --name=compiler ls /home")
+    print("new:")
+    print(hi)
+end)

@@ -33,6 +33,8 @@ vim.opt.cursorline = true
 vim.opt.smartcase = true
 vim.opt.ignorecase = true
 
+-- vim.cmd('syntax off')
+
 -- set the timeout of pattern matching
 vim.g.matchparen_timeout = 2
 vim.g.matchparen_insert_timeout = 2
