@@ -1,1 +1,4 @@
-vim.keymap.set('n', '<leader>u', vim.cmd.UndotreeToggle)
+vim.keymap.set('n', '<leader>ut', function()
+    vim.cmd.UndotreeShow()
+    vim.cmd.UndotreeFocus()
+end)
