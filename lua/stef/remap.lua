@@ -49,29 +49,94 @@ vim.keymap.set('n', '<leader>R', function()
     ColorMyPencils()
 end)
 
-vim.keymap.set('n', 'zfa{', function()
+vim.keymap.set('n', 'zfaf', function()
     local ts = vim.treesitter
-    local ts_utils = require 'nvim-treesitter.ts_utils'
 
     local parser = ts.get_parser()
     local tree = parser:parse()[1]
     local root = tree:root()
 
-    local query = ts.parse_query(
-    vim.bo.filetype,
-    [[
-    (function_declaration) @function
-    (function_definition) @function
-    (method_declaration) @function
-    (method_definition) @function
-    ]]
-    )
+    local bufnr = vim.api.nvim_get_current_buf()
+    local lang =vim.bo[bufnr].filetype
 
-    print(query)
+    local query = vim.treesitter.query.get(lang, "folds")
+
+    if not query then
+        return
+    end
+
+    local current_max = 0
 
     for _, node in query:iter_captures(root, 0, 0, -1) do
-        local start_line, _, end_line, _ = ts_utils.get_node_range(node)
-        vim.cmd(start_line + 1 .. "," .. end_line + 1 .. "fold")
+        local fold_start, _, fold_end, _ = node:range()
+
+        if fold_start > current_max and fold_start+1 < fold_end-1 then
+            vim.cmd(string.format("%d,%dfold", fold_start+2, fold_end))
+            current_max = fold_start
+        end
     end
 end)
 
+local function find_current_fold(current_line)
+    current_line = current_line - 1 -- make it zero indexed for tree
+    local bufnr = vim.api.nvim_get_current_buf()
+    local lang =vim.bo[bufnr].filetype
+
+    local query = vim.treesitter.query.get(lang, "folds")
+
+    if not query then
+        print("No folds found for filtype"..lang)
+        return
+    end
+
+    local parser = vim.treesitter.get_parser(bufnr, lang)
+    local tree = parser:parse()[1]
+    local root = tree:root()
+
+    local latest_start = 0
+    local latest_end = 0
+
+    for _, match, _ in query:iter_matches(root, bufnr) do
+        for id, node in pairs(match) do
+            if query.captures[id] == "fold" then
+                local start_i, _, end_i, _ = node:range() -- not sero indexed
+                if start_i <= current_line and current_line <= end_i and start_i ~= end_i then
+                    latest_start = start_i
+                    latest_end = end_i
+                end
+            end
+        end
+    end
+
+    return latest_start + 1, latest_end + 1
+end
+
+vim.keymap.set('n', 'zif', function()
+    local current_cursor = vim.api.nvim_win_get_cursor(0)
+
+    local fold_start, fold_end = find_current_fold(current_cursor[1])
+
+    if fold_end ~= 0 then
+        local set_line = math.floor((fold_end - fold_start)/2 + fold_start)
+
+        local winid = vim.api.nvim_get_current_win()
+
+        vim.api.nvim_win_set_cursor(winid, {set_line, 0}) -- Temporarily set cursor
+        vim.cmd("normal! zz")
+        vim.api.nvim_win_set_cursor(winid, current_cursor) -- Move cursor back
+    else
+        print("Could not find the current fold")
+    end
+end, { noremap = true, silent = true })
+
+vim.keymap.set('n', 'zfif', function()
+    local current_cursor = vim.api.nvim_win_get_cursor(0)
+
+    local fold_start, fold_end = find_current_fold(current_cursor[1])
+
+    if fold_end ~= 0 and fold_start+1 <= fold_end-1 then
+        vim.cmd(string.format("%d,%dfold", fold_start+1, fold_end-1))
+    else
+        print("Could not find the current fold")
+    end
+end, { noremap = true, silent = true })
