@@ -22,7 +22,7 @@ return require('packer').startup(function(use)
     use ('zbirenbaum/copilot.lua')
     use ('zbirenbaum/copilot-cmp')
     use ({
-        'CopilotC-Nvim/CopilotChat.nvim', branch = 'canary',
+        'CopilotC-Nvim/CopilotChat.nvim', branch = 'main',
         requires = {
             { 'zbirenbaum/copilot.lua' },
             { 'nvim-lua/plenary.nvim' }

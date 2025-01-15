@@ -140,3 +140,15 @@ vim.keymap.set('n', 'zfif', function()
         print("Could not find the current fold")
     end
 end, { noremap = true, silent = true })
+
+vim.keymap.set('n', 'gcif', function()
+    local current_cursor = vim.api.nvim_win_get_cursor(0)
+
+    local fold_start, fold_end = find_current_fold(current_cursor[1])
+
+    if fold_end ~= 0 and fold_start <= fold_end then
+        vim.cmd(string.format("%d,%dCommentary", fold_start, fold_end))
+    else
+        print("Could not find the current fold")
+    end
+end, {noremap = true, silent = true })

@@ -44,15 +44,64 @@ local function make_label(tabpage_number)
     return bufname:reverse():gsub('/.*', ''):reverse()
 end
 
+vim.keymap.set('n', '<leader>b', function()
+    local win_width = vim.o.columns;
+    print(win_width)
+end)
+
+local function chopfirst(char_number, line)
+    local index = 0
+
+    local custom_depth = 0
+
+    for char_index=1, #line do
+        if (string.sub(line, char_index, char_index) == '#') then
+            if ( 1 < char_index and string.sub(line, char_index - 1, char_index - 1) == '%') then
+                char_index = char_index + 1 -- skip the next #
+                custom_depth = custom_depth + 1
+            else
+                custom_depth = custom_depth - 1
+            end
+        end
+
+        if (custom_depth == 0) then
+            index = index + 1
+        end
+
+        if (index >= char_number) then
+            return string.sub(line, char_index, line)
+        end
+    end
+
+    return line
+end
+
+local function is_tab_modified(tab_number)
+    local windows = vim.api.nvim_tabpage_list_wins(tab_number)
+
+    for _, win in ipairs(windows) do
+        local buf = vim.api.nvim_win_get_buf(win)
+
+        if (vim.api.nvim_get_option_value('modified', {buf=buf})) then
+            return true
+       end
+    end
+    return false
+end
+
+
 function make_tabeline()
     local tabs = vim.api.nvim_list_tabpages()
     local new_line = ""
     local current = vim.api.nvim_get_current_tabpage()
+    local line_width = vim.o.columns
+    local line_index = 0
 
     for i, tab in ipairs(tabs) do
         -- Highlight selected tab
         if (tab == current) then
             new_line = new_line .. '%#PmenuThumb# '
+            line_index = line_index + 1
         else
             new_line = new_line .. '%#StatusLine#'
         end
@@ -61,7 +110,29 @@ function make_tabeline()
         new_line = new_line .. '%' .. i .. 'T'
 
         -- Add label name
-        new_line = new_line .. '' .. i ..  ' ' .. make_label(tab) .. ' %#StatusLine# '
+        local symbol = ' '
+        if (is_tab_modified(tab)) then
+            symbol = '*'
+        end
+        local label = '' .. i .. symbol .. make_label(tab) .. ' '
+        line_index = line_index + string.len(label) + 1
+
+        new_line = new_line .. label ..'%#StatusLine# '
+
+        -- adjusting for width of the window
+        if (line_index>line_width) then
+            print("here");
+            new_line = chopfirst(line_index - line_width, new_line)
+            -- if (tab == current) then
+            --     if (tab == #tabs) then
+            --         -- string.subs(new_line, line_index - line_width, line_index)
+            --     end
+            -- else
+            --     -- do some chopping here
+            -- end
+
+            break
+        end
     end
 
     return new_line
