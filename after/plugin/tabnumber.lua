@@ -44,38 +44,6 @@ local function make_label(tabpage_number)
     return bufname:reverse():gsub('/.*', ''):reverse()
 end
 
-vim.keymap.set('n', '<leader>b', function()
-    local win_width = vim.o.columns;
-    print(win_width)
-end)
-
-local function chopfirst(char_number, line)
-    local index = 0
-
-    local custom_depth = 0
-
-    for char_index=1, #line do
-        if (string.sub(line, char_index, char_index) == '#') then
-            if ( 1 < char_index and string.sub(line, char_index - 1, char_index - 1) == '%') then
-                char_index = char_index + 1 -- skip the next #
-                custom_depth = custom_depth + 1
-            else
-                custom_depth = custom_depth - 1
-            end
-        end
-
-        if (custom_depth == 0) then
-            index = index + 1
-        end
-
-        if (index >= char_number) then
-            return string.sub(line, char_index, line)
-        end
-    end
-
-    return line
-end
-
 local function is_tab_modified(tab_number)
     local windows = vim.api.nvim_tabpage_list_wins(tab_number)
 
@@ -89,53 +57,94 @@ local function is_tab_modified(tab_number)
     return false
 end
 
+local function tab_table_to_line(tab_table, selected_index)
 
-function make_tabeline()
-    local tabs = vim.api.nvim_list_tabpages()
-    local new_line = ""
-    local current = vim.api.nvim_get_current_tabpage()
-    local line_width = vim.o.columns
-    local line_index = 0
+    local max_width = vim.o.columns
+    local current_width = string.len(tab_table[selected_index]) + 3 -- add 2 for spaces and 1 for the >
 
-    for i, tab in ipairs(tabs) do
-        -- Highlight selected tab
-        if (tab == current) then
-            new_line = new_line .. '%#PmenuThumb# '
-            line_index = line_index + 1
-        else
-            new_line = new_line .. '%#StatusLine#'
+    local made_line = '%#PmenuThumb#' .. '%' .. selected_index .. 'T' -- make selectable and highlight
+
+    if (current_width > max_width) then
+        for i=1,max_width do
+            made_line = made_line .. '-'
+        end
+        return made_line
+    end
+
+    made_line = made_line .. ' ' .. tab_table[selected_index] .. ' '
+    made_line = made_line .. '%#StatusLine#'
+
+    local full = false;
+
+
+    for i=selected_index-1, 1, -1 do
+        local tab_name = ' ' .. tab_table[i] .. ' '
+        current_width = current_width + string.len(tab_name)
+
+        if (current_width > max_width) then
+            full = true
+            tab_name = '<' .. string.sub(tab_name, current_width - max_width + 1, string.len(tab_name))
         end
 
-        -- make tabs clickable
-        new_line = new_line .. '%' .. i .. 'T'
+        made_line = '%#StatusLine#%' .. i .. 'T' .. tab_name .. made_line
 
-        -- Add label name
-        local symbol = ' '
-        if (is_tab_modified(tab)) then
-            symbol = '*'
-        end
-        local label = '' .. i .. symbol .. make_label(tab) .. ' '
-        line_index = line_index + string.len(label) + 1
-
-        new_line = new_line .. label ..'%#StatusLine# '
-
-        -- adjusting for width of the window
-        if (line_index>line_width) then
-            print("here");
-            new_line = chopfirst(line_index - line_width, new_line)
-            -- if (tab == current) then
-            --     if (tab == #tabs) then
-            --         -- string.subs(new_line, line_index - line_width, line_index)
-            --     end
-            -- else
-            --     -- do some chopping here
-            -- end
-
+        if (full) then
             break
         end
     end
 
-    return new_line
+    if (full and selected_index ~= #tab_table) then
+        made_line = made_line .. '%#StatusLine#>'
+        return made_line
+    end
+
+    for i=selected_index+1, #tab_table do
+        local tab_name = ' ' .. tab_table[i] .. ' '
+        current_width = current_width + string.len(tab_name)
+
+        if (current_width > max_width) then
+            full = true
+            tab_name = string.sub(tab_name, 1, string.len(tab_name) - (current_width - max_width + 1)) .. '>'
+        end
+
+        made_line = made_line .. '%#StatusLine#%' .. i .. 'T' .. tab_name
+
+        if (full) then
+            break
+        end
+    end
+
+    return made_line
+end
+
+function make_tabeline()
+    local tabs = vim.api.nvim_list_tabpages()
+
+    local tab_table = {}
+
+    local current = vim.api.nvim_get_current_tabpage()
+    local current_index = 0;
+
+    for i, tab in ipairs(tabs) do
+
+        if (tab == current) then
+            current_index = i
+        end
+
+        local tab_name = tostring(i)
+
+        if (is_tab_modified(tab)) then
+            tab_name = tab_name .. '*'
+        else
+            tab_name = tab_name .. ' '
+        end
+
+        tab_name = tab_name .. make_label(tab)
+
+        tab_table[i] = tab_name
+    end
+
+    return tab_table_to_line(tab_table, current_index)
 end
 
 vim.o.tabline='%!v:lua.make_tabeline()'
