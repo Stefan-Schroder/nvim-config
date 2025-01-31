@@ -1,4 +1,6 @@
-vim.keymap.set("n", "<leader>gs", vim.cmd.Git);
+vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+vim.keymap.set("n", "<leader>gb", "<cmd>Git blame<CR>")
+
 
 local function is_git_repo()
     local handle = io.popen("git rev-parse --is-inside-work-tree 2>/dev/null")
