@@ -1,16 +1,14 @@
 local function git_status()
     local git_branch = vim.fn["fugitive#statusline"]()
     if string.len(git_branch) == 0 then
-        return ""
+        return " "
     end
 
     return "%#PmenuThumb# "..(string.sub(git_branch, 6, -3)).." %#StatusLine# "
 end
 
 vim.defer_fn(function()
-    vim.opt.statusline = ""
-
-    vim.opt.statusline:append(git_status())
+    vim.opt.statusline = git_status()
 
     local file_name = "%f"
     local help_buffer = "%h"

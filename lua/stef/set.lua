@@ -6,7 +6,7 @@ vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 
-vim.opt.clipboard = { 'unnamed', 'unnamedplus' }
+vim.opt.clipboard = { 'unnamedplus', 'unnamed' }
 
 vim.opt.smartindent = true
 

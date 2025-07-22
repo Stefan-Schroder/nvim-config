@@ -47,45 +47,45 @@ function ColorMyPencils(color)
     vim.opt.background = "dark"
 
     -- Load in pywal colours
-    local handle = io.popen('cat ~/.cache/wal/colors.json')
-    if handle then
-        local colors_json = handle:read("*a")
-        handle:close()
-        local colors = vim.fn.json_decode(colors_json)
+    -- local handle = io.popen('cat ~/.cache/wal/colors.json')
+    -- if handle then
+    --     local colors_json = handle:read("*a")
+    --     handle:close()
+    --     local colors = vim.json.decode(colors_json)
 
-        -- Set UI colors
-        vim.api.nvim_set_hl(0, 'Normal', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
-        vim.api.nvim_set_hl(0, 'NormalNC', { link='Normal', strikethrough=true})
-        -- vim.api.nvim_set_hl(0, 'NormalNC', { bg = hex_sub(colors.special.background, "#1A1A1A"), fg = colors.special.foreground})
+    --     -- Set UI colors
+    --     vim.api.nvim_set_hl(0, 'Normal', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
+    --     vim.api.nvim_set_hl(0, 'NormalNC', { link='Normal', strikethrough=true})
+    --     -- vim.api.nvim_set_hl(0, 'NormalNC', { bg = hex_sub(colors.special.background, "#1A1A1A"), fg = colors.special.foreground})
 
-        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
+    --     vim.api.nvim_set_hl(0, 'WinSeparator', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
 
-        vim.api.nvim_set_hl(0, 'NormalFloat', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
-        vim.api.nvim_set_hl(0, 'FloatBorder', { link='WinSeparator' })
-        vim.api.nvim_set_hl(0, 'FloatFooter', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
-        vim.api.nvim_set_hl(0, 'FloatTitle', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
+    --     vim.api.nvim_set_hl(0, 'NormalFloat', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
+    --     vim.api.nvim_set_hl(0, 'FloatBorder', { link='WinSeparator' })
+    --     vim.api.nvim_set_hl(0, 'FloatFooter', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
+    --     vim.api.nvim_set_hl(0, 'FloatTitle', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
 
-        vim.api.nvim_set_hl(0, 'Tabline', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
-        vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = hex_add(colors.colors.color1, "#000000"), fg = hex_sub(colors.colors.color8, "#444444"), bold=true})
-        vim.api.nvim_set_hl(0, 'StatusLine', { bg = hex_add(colors.colors.color8, "#000000"), fg = colors.colors.color7, bold=false})
-        vim.api.nvim_set_hl(0, 'CursorLine', { bg = hex_sub(colors.colors.color8, "#0A0A0A")})
-        -- vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = hex_sub(colors.colors.color8, "#0A0A0A"), bold=true, standout=true})
-        vim.api.nvim_set_hl(0, 'CursorLineNr', { link='Search'})
-        vim.api.nvim_set_hl(0, 'LineNr', { fg = colors.colors.color7, bold=false})
-        vim.api.nvim_set_hl(0, 'Comment', { fg = hex_sub(colors.special.foreground, "#777777")})
+    --     vim.api.nvim_set_hl(0, 'Tabline', { bg = hex_add(colors.special.background, "#010101"), fg = colors.special.foreground})
+    --     vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = hex_add(colors.colors.color1, "#000000"), fg = hex_sub(colors.colors.color8, "#444444"), bold=true})
+    --     vim.api.nvim_set_hl(0, 'StatusLine', { bg = hex_add(colors.colors.color8, "#000000"), fg = colors.colors.color7, bold=false})
+    --     vim.api.nvim_set_hl(0, 'CursorLine', { bg = hex_sub(colors.colors.color8, "#0A0A0A")})
+    --     -- vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = hex_sub(colors.colors.color8, "#0A0A0A"), bold=true, standout=true})
+    --     vim.api.nvim_set_hl(0, 'CursorLineNr', { link='Search'})
+    --     vim.api.nvim_set_hl(0, 'LineNr', { fg = colors.colors.color7, bold=false})
+    --     vim.api.nvim_set_hl(0, 'Comment', { fg = hex_sub(colors.special.foreground, "#777777")})
 
-        vim.api.nvim_set_hl(0, 'TelescopeNormal', { link='Normal' })
-        vim.api.nvim_set_hl(0, 'TelescopeBorder', { link='WinSeparator' })
-        vim.api.nvim_set_hl(0, 'TelescopePromptNormal', { link='NormalNC' })
-        vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { link='WinSeparator' })
-        vim.api.nvim_set_hl(0, 'TelescopeSelection', { link='CursorLine' })
-        -- vim.api.nvim_set_hl(0, 'TelescopePromptPrefix', { bg= })
-        -- vim.api.nvim_set_hl(0, 'TelescopeMatching', { bg= })
-        -- vim.api.nvim_set_hl(0, 'TelescopePreviewNormal', { bg= })
-        -- vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { bg= })
-        -- vim.api.nvim_set_hl(0, 'TelescopeResultsNormal', { bg= })
-        -- vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { bg= })
-    end
+    --     vim.api.nvim_set_hl(0, 'TelescopeNormal', { link='Normal' })
+    --     vim.api.nvim_set_hl(0, 'TelescopeBorder', { link='WinSeparator' })
+    --     vim.api.nvim_set_hl(0, 'TelescopePromptNormal', { link='NormalNC' })
+    --     vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { link='WinSeparator' })
+    --     vim.api.nvim_set_hl(0, 'TelescopeSelection', { link='CursorLine' })
+    --     -- vim.api.nvim_set_hl(0, 'TelescopePromptPrefix', { bg= })
+    --     -- vim.api.nvim_set_hl(0, 'TelescopeMatching', { bg= })
+    --     -- vim.api.nvim_set_hl(0, 'TelescopePreviewNormal', { bg= })
+    --     -- vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { bg= })
+    --     -- vim.api.nvim_set_hl(0, 'TelescopeResultsNormal', { bg= })
+    --     -- vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { bg= })
+    -- end
 end
 
 ColorMyPencils()
