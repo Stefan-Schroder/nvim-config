@@ -1,8 +1,22 @@
-vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('user_lsp_attach', {clear = true}),
-  callback = function(event)
-    local opts = {buffer = event.buf}
+-- ================================
+-- LSP + Autocompletion Setup
+-- ================================
 
+-- Ensure Mason + LSP servers are configured
+require("mason").setup()
+require("mason-lspconfig").setup({
+    ensure_installed = { "ts_ls", "rust_analyzer", "lua_ls" },
+})
+
+-- =========================================
+-- LSP on_attach: keymaps + buffer settings
+-- =========================================
+local on_attach = function(client, bufnr)
+    local opts = { buffer = bufnr, silent = true, noremap = true }
+
+    local keymap = vim.keymap.set
+
+    --- LSP keymaps ---
     vim.keymap.set('n', 'gd', function()
         -- Use LSP to get the definition location
         local result = vim.lsp.buf_request_sync(0, "textDocument/definition", vim.lsp.util.make_position_params(), 1000)
@@ -10,6 +24,13 @@ vim.api.nvim_create_autocmd('LspAttach', {
         if not result or vim.tbl_isempty(result) then
             print("No definition found. Stef maybe check fallbacks")
             return
+        end
+
+        -- Stop clang from marking unused regions of code
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        -- if client.name == "clangd" then
+        if client.server_capabilities.semanticTokensProvider then
+            client.server_capabilities.semanticTokensProvider = nil
         end
 
         -- local target_uri = result[1].result[1].uri
@@ -36,86 +57,110 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.lsp.util.jump_to_location(result[1].result[1])
     end,
     { noremap = true, silent = true })
-    -- vim.keymap.set('n', 'gd', function() vim.lsp.buf.definition() end, opts)
-    vim.keymap.set('n', 'K', function() vim.lsp.buf.hover() end, opts)
-    vim.keymap.set('n', '<leader>vws', function() vim.lsp.buf.workspace_symbol() end, opts)
-    vim.keymap.set('n', '<leader>vd', function() vim.diagnostic.open_float() end, opts)
-    vim.keymap.set('n', '[d', function() vim.diagnostic.goto_next() end, opts)
-    vim.keymap.set('n', ']d', function() vim.diagnostic.goto_prev() end, opts)
-    vim.keymap.set('n', '<leader>vca', function() vim.lsp.buf.code_action() end, opts)
-    vim.keymap.set('n', '<leader>vrr', function() vim.lsp.buf.references() end, opts)
-    vim.keymap.set('n', '<leader>vrn', function() vim.lsp.buf.rename() end, opts)
-    vim.keymap.set('i', '<C-h>', function() vim.lsp.buf.signature_help() end, opts)
-  end,
-})
 
-local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+    keymap("n", "K", vim.lsp.buf.hover, opts)
+    keymap("n", "<leader>vws", vim.lsp.buf.workspace_symbol, opts)
+    keymap("n", "<leader>vd", vim.diagnostic.open_float, opts)
+    keymap("n", "[d", vim.diagnostic.goto_next, opts)
+    keymap("n", "]d", vim.diagnostic.goto_prev, opts)
+    keymap("n", "<leader>vca", vim.lsp.buf.code_action, opts)
+    keymap("n", "<leader>vrr", vim.lsp.buf.references, opts)
+    keymap("n", "<leader>vrn", vim.lsp.buf.rename, opts)
+    keymap("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 
-require('mason').setup({})
-require('mason-lspconfig').setup({
-  ensure_installed = {'ts_ls', 'rust_analyzer'},
-  handlers = {
-    function(server_name)
-      require('lspconfig')[server_name].setup({
-        capabilities = lsp_capabilities,
-      })
-    end,
-    lua_ls = function()
-      require('lspconfig').lua_ls.setup({
-        capabilities = lsp_capabilities,
+    -- Disable semantic tokens for clangd (fixes annoying highlights)
+    if client.name == "clangd" and client.server_capabilities.semanticTokensProvider then
+        client.server_capabilities.semanticTokensProvider = nil
+    end
+end
+
+-- ============================
+-- Capabilities for nvim-cmp
+-- ============================
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+-- ============================
+-- Setup all servers
+-- ============================
+-- assume on_attach and capabilities already defined above
+local lspconfig = require("lspconfig")
+local mlsp = require("mason-lspconfig")
+
+-- servers you want installed / configured
+local servers = { "ts_ls", "rust_analyzer", "lua_ls" }
+
+local default_handler = function(server_name)
+    lspconfig[server_name].setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+    })
+end
+
+local lua_handler = function()
+    lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
         settings = {
-          Lua = {
-            runtime = {
-              version = 'LuaJIT'
+            Lua = {
+                runtime = {
+                    version = "LuaJIT",
+                },
+                diagnostics = { globals = { "vim" } },
+                workspace = {
+                    library = vim.api.nvim_get_runtime_file(),
+                    checkThirdParty = false,
+                },
+                telemetry = {
+                    enable = false,
+                }
             },
-            diagnostics = {
-              globals = {'vim'},
-            },
-            workspace = {
-              library = {
-                vim.env.VIMRUNTIME,
-              }
-            }
-          }
-        }
-      })
-    end,
-  }
+        },
+    })
+end
+
+mlsp.setup({
+    ensure_installed = servers, -- safe to include again
+    handlers = {
+        default_handler,
+        ["lua_ls"] = lua_handler,
+    },
 })
 
-local cmp = require('cmp')
-local cmp_select = {behavior = cmp.SelectBehavior.Select}
+-- ============================
+-- nvim-cmp Autocompletion
+-- ============================
+local cmp = require("cmp")
 
 cmp.setup({
-  sources = cmp.config.sources({
-    {name = 'nvim_lsp'},
-    {name = 'luasnip'},
-  }, {
-    {name = 'buffer'},
-  }),
-  mapping = cmp.mapping.preset.insert({
-    ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-    ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-    ['<C-y>'] = cmp.mapping.confirm({select = true}),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ["<Tab>"] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-            cmp.select_next_item()
-        else
-            fallback()
-        end
-    end, {"i", "s"}),
-    ["<S-Tab>"] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-            cmp.select_prev_item()
-        else
-            fallback()
-        end
-    end, {"i", "s"}),
-}),
-  snippet = {
-    expand = function(args)
-      require('luasnip').lsp_expand(args.body)
-    end,
-  },
+    snippet = {
+        expand = function(args)
+            require("luasnip").lsp_expand(args.body)
+        end,
+    },
+    mapping = cmp.mapping.preset.insert({
+        ["<C-p>"] = cmp.mapping.select_prev_item(),
+        ["<C-n>"] = cmp.mapping.select_next_item(),
+        ["<C-y>"] = cmp.mapping.confirm({ select = true }),
+        ["<C-Space>"] = cmp.mapping.complete(),
+        ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_next_item()
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_prev_item()
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+    }),
+    sources = cmp.config.sources({
+        { name = "nvim_lsp" },
+        { name = "luasnip" },
+    }, {
+        { name = "buffer" },
+    }),
 })

@@ -16,6 +16,12 @@ vim.keymap.set('v', '<leader>gp', function()
     builtin.grep_string({search = previous_search})
 end)
 
+vim.keymap.set('n', '<leader>giw', function()
+    vim.cmd('normal! "tyiw')
+    previous_search = vim.fn.getreg('t')
+    builtin.grep_string({search = previous_search})
+end)
+
 vim.keymap.set('n', '<leader>gP', function()
     if previous_search == "" then
         print("No previous search was recorded")

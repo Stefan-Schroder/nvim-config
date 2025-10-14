@@ -1,1 +1,2 @@
-require'lspconfig'.clangd.setup{}
+-- not sure what this was even for
+-- require'lspconfig'.clangd.setup{}

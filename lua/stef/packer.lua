@@ -1,5 +1,3 @@
--- This file can be loaded by calling `lua require('plugins')` from your init.vim
-
 -- Only required if you have packer configured as `opt`
 vim.cmd [[packadd packer.nvim]]
 
@@ -18,17 +16,27 @@ return require('packer').startup(function(use)
         as = "rose-pine",
     })
 
+    use({
+        "kylechui/nvim-surround",
+        tag = "*", -- Use for stability; omit to use `main` branch for the latest features
+        config = function()
+            require("nvim-surround").setup({
+                -- Configuration here, or leave empty to use defaults
+            })
+        end
+    })
+
     -- Copilot
-    -- use ('zbirenbaum/copilot.lua')
-    -- use ('zbirenbaum/copilot-cmp')
-    -- use ({
-    --     'CopilotC-Nvim/CopilotChat.nvim', branch = 'main',
-    --     requires = {
-    --         { 'zbirenbaum/copilot.lua' },
-    --         { 'nvim-lua/plenary.nvim' }
-    --     },
-    --     build = 'make tiktoken'
-    -- })
+    use ('zbirenbaum/copilot.lua')
+    use ('zbirenbaum/copilot-cmp')
+    use ({
+        'CopilotC-Nvim/CopilotChat.nvim', branch = 'main',
+        requires = {
+            { 'zbirenbaum/copilot.lua' },
+            { 'nvim-lua/plenary.nvim' }
+        },
+        build = 'make tiktoken'
+    })
 
     -- For the LSP
     use({'VonHeikemen/lsp-zero.nvim', branch = 'v4.x'})
@@ -40,6 +48,13 @@ return require('packer').startup(function(use)
     use({'hrsh7th/cmp-buffer'})
     use({'saadparwaiz1/cmp_luasnip'})
     use({'L3MON4D3/LuaSnip'})
+
+    use({
+      "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+      config = function()
+        require("lsp_lines").setup()
+      end,
+    })
 
     -- Random
     use ('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})

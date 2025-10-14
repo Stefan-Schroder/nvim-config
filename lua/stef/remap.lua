@@ -49,7 +49,9 @@ vim.keymap.set('n', '<leader>R', function()
     ColorMyPencils()
 end)
 
-vim.keymap.set('n', 'zfaf', function()
+
+----------------------------TREE SITTER FUNCTIONS------------------------------------
+vim.keymap.set('n', 'zfaf', function() -- Fold all of the functions
     local ts = vim.treesitter
 
     local parser = ts.get_parser()
@@ -77,44 +79,31 @@ vim.keymap.set('n', 'zfaf', function()
     end
 end)
 
-local function find_current_fold(current_line)
-    current_line = current_line - 1 -- make it zero indexed for tree
-    local bufnr = vim.api.nvim_get_current_buf()
-    local lang =vim.bo[bufnr].filetype
+local function find_current_body() -- Finds the first parent body (could be a function or a if statement)
+    local ts_utils = require 'nvim-treesitter.ts_utils'
+    local node = ts_utils.get_node_at_cursor()
 
-    local query = vim.treesitter.query.get(lang, "folds")
-
-    if not query then
-        print("No folds found for filtype"..lang)
+    if not node then
+        print("There is no node under cursor")
         return
     end
 
-    local parser = vim.treesitter.get_parser(bufnr, lang)
-    local tree = parser:parse()[1]
-    local root = tree:root()
-
-    local latest_start = 0
-    local latest_end = 0
-
-    for _, match, _ in query:iter_matches(root, bufnr) do
-        for id, node in pairs(match) do
-            if query.captures[id] == "fold" then
-                local start_i, _, end_i, _ = node:range() -- not sero indexed
-                if start_i <= current_line and current_line <= end_i and start_i ~= end_i then
-                    latest_start = start_i
-                    latest_end = end_i
-                end
-            end
+    while node do
+        local type = node:type()
+        print(type)
+        if type == "compound_statement" or "block" then
+            local start_row, _, end_row, _ = node:range()
+            print("start: "..start_row.." end: "..end_row)
+            return start_row + 1, end_row + 1
         end
+        node = node:parent()
     end
-
-    return latest_start + 1, latest_end + 1
+    print("Never found a compound_statement")
 end
 
-vim.keymap.set('n', 'zif', function()
+vim.keymap.set('n', 'zif', function() -- Center the screen on the function
     local current_cursor = vim.api.nvim_win_get_cursor(0)
-
-    local fold_start, fold_end = find_current_fold(current_cursor[1])
+    local fold_start, fold_end = find_current_body()
 
     if fold_end ~= 0 then
         local set_line = math.floor((fold_end - fold_start)/2 + fold_start)
@@ -129,10 +118,8 @@ vim.keymap.set('n', 'zif', function()
     end
 end, { noremap = true, silent = true })
 
-vim.keymap.set('n', 'zfif', function()
-    local current_cursor = vim.api.nvim_win_get_cursor(0)
-
-    local fold_start, fold_end = find_current_fold(current_cursor[1])
+vim.keymap.set('n', 'zfif', function() -- Fold the inner function
+    local fold_start, fold_end = find_current_body()
 
     if fold_end ~= 0 and fold_start+1 <= fold_end-1 then
         vim.cmd(string.format("%d,%dfold", fold_start+1, fold_end-1))
@@ -141,10 +128,8 @@ vim.keymap.set('n', 'zfif', function()
     end
 end, { noremap = true, silent = true })
 
-vim.keymap.set('n', 'gcif', function()
-    local current_cursor = vim.api.nvim_win_get_cursor(0)
-
-    local fold_start, fold_end = find_current_fold(current_cursor[1])
+vim.keymap.set('n', 'gcif', function() -- Comment out the inner block
+    local fold_start, fold_end = find_current_body()
 
     if fold_end ~= 0 and fold_start <= fold_end then
         vim.cmd(string.format("%d,%dCommentary", fold_start, fold_end))
@@ -152,3 +137,14 @@ vim.keymap.set('n', 'gcif', function()
         print("Could not find the current fold")
     end
 end, {noremap = true, silent = true })
+
+vim.keymap.set('n', '<leader>cse', function ()
+    local fold_start, fold_end = find_current_body()
+
+    if fold_end == 0 or fold_start > fold_end then
+        print("Could not find the current fold")
+        return
+    end
+
+
+end, {noremap = true, silent = true})
