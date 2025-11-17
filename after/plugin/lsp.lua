@@ -11,12 +11,11 @@ require("mason-lspconfig").setup({
 -- =========================================
 -- LSP on_attach: keymaps + buffer settings
 -- =========================================
-local on_attach = function(client, bufnr)
-    local opts = { buffer = bufnr, silent = true, noremap = true }
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('user_lsp_attach', {clear = true}),
+  callback = function(event)
+    local opts = {buffer = event.buf}
 
-    local keymap = vim.keymap.set
-
-    --- LSP keymaps ---
     vim.keymap.set('n', 'gd', function()
         -- Use LSP to get the definition location
         local result = vim.lsp.buf_request_sync(0, "textDocument/definition", vim.lsp.util.make_position_params(), 1000)
@@ -30,7 +29,7 @@ local on_attach = function(client, bufnr)
         local client = vim.lsp.get_client_by_id(args.data.client_id)
         -- if client.name == "clangd" then
         if client.server_capabilities.semanticTokensProvider then
-            client.server_capabilities.semanticTokensProvider = nil
+          client.server_capabilities.semanticTokensProvider = nil
         end
 
         -- local target_uri = result[1].result[1].uri
@@ -57,22 +56,83 @@ local on_attach = function(client, bufnr)
         vim.lsp.util.jump_to_location(result[1].result[1])
     end,
     { noremap = true, silent = true })
+    -- vim.keymap.set('n', 'gd', function() vim.lsp.buf.definition() end, opts)
+    vim.keymap.set('n', 'K', function() vim.lsp.buf.hover() end, opts)
+    vim.keymap.set('n', '<leader>vws', function() vim.lsp.buf.workspace_symbol() end, opts)
+    vim.keymap.set('n', '<leader>vd', function() vim.diagnostic.open_float() end, opts)
+    vim.keymap.set('n', '[d', function() vim.diagnostic.goto_next() end, opts)
+    vim.keymap.set('n', ']d', function() vim.diagnostic.goto_prev() end, opts)
+    vim.keymap.set('n', '<leader>vca', function() vim.lsp.buf.code_action() end, opts)
+    vim.keymap.set('n', '<leader>vrr', function() vim.lsp.buf.references() end, opts)
+    vim.keymap.set('n', '<leader>vrn', function() vim.lsp.buf.rename() end, opts)
+    vim.keymap.set('i', '<C-h>', function() vim.lsp.buf.signature_help() end, opts)
+  end,
+})
+-- vim.api.nvim_create_autocmd('LspAttach', {
+--   group = vim.api.nvim_create_augroup('user_lsp_attach', {clear = true}),
+--   callback = function(event)
+--     local opts = { buffer = bufnr, silent = true, noremap = true }
 
-    keymap("n", "K", vim.lsp.buf.hover, opts)
-    keymap("n", "<leader>vws", vim.lsp.buf.workspace_symbol, opts)
-    keymap("n", "<leader>vd", vim.diagnostic.open_float, opts)
-    keymap("n", "[d", vim.diagnostic.goto_next, opts)
-    keymap("n", "]d", vim.diagnostic.goto_prev, opts)
-    keymap("n", "<leader>vca", vim.lsp.buf.code_action, opts)
-    keymap("n", "<leader>vrr", vim.lsp.buf.references, opts)
-    keymap("n", "<leader>vrn", vim.lsp.buf.rename, opts)
-    keymap("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+--     local keymap = vim.keymap.set
 
-    -- Disable semantic tokens for clangd (fixes annoying highlights)
-    if client.name == "clangd" and client.server_capabilities.semanticTokensProvider then
-        client.server_capabilities.semanticTokensProvider = nil
-    end
-end
+--     --- LSP keymaps ---
+--     vim.keymap.set('n', 'gd', function()
+--         -- Use LSP to get the definition location
+--         local result = vim.lsp.buf_request_sync(0, "textDocument/definition", vim.lsp.util.make_position_params(), 1000)
+
+--         if not result or vim.tbl_isempty(result) then
+--             print("No definition found. Stef maybe check fallbacks")
+--             return
+--         end
+
+--         -- -- Stop clang from marking unused regions of code
+--         -- local client = vim.lsp.get_client_by_id(args.data.client_id)
+--         -- -- if client.name == "clangd" then
+--         -- if client.server_capabilities.semanticTokensProvider then
+--         --     client.server_capabilities.semanticTokensProvider = nil
+--         -- end
+
+--         -- local target_uri = result[1].result[1].uri
+--         local target_file = vim.uri_to_fname(result[1].result[1].uri)
+--         local target_line = result[1].result[1].range.start.line + 1
+--         local target_char = result[1].result[1].range.start.character
+
+--         -- Iterate through all buffers and check if the target file is already open in another tab
+--         for _, tabnr in ipairs(vim.api.nvim_list_tabpages()) do
+--             for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
+--                 local buf = vim.api.nvim_win_get_buf(win)
+--                 local bufname = vim.api.nvim_buf_get_name(buf)
+
+--                 if bufname == target_file then
+--                     vim.api.nvim_set_current_tabpage(tabnr)
+--                     vim.api.nvim_set_current_win(win)
+--                     vim.api.nvim_win_set_cursor(win, {target_line, target_char})
+--                     return
+--                 end
+--             end
+--         end
+
+--         -- If the file isn't open in any other tab, use LSP to go to the definition
+--         vim.lsp.util.jump_to_location(result[1].result[1])
+--     end,
+--     { noremap = true, silent = true })
+
+--     keymap("n", "K", vim.lsp.buf.hover, opts)
+--     keymap("n", "<leader>vws", vim.lsp.buf.workspace_symbol, opts)
+--     keymap("n", "<leader>vd", vim.diagnostic.open_float, opts)
+--     keymap("n", "[d", vim.diagnostic.goto_next, opts)
+--     keymap("n", "]d", vim.diagnostic.goto_prev, opts)
+--     keymap("n", "<leader>vca", vim.lsp.buf.code_action, opts)
+--     keymap("n", "<leader>vrr", vim.lsp.buf.references, opts)
+--     keymap("n", "<leader>vrn", vim.lsp.buf.rename, opts)
+--     keymap("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+
+--     -- Disable semantic tokens for clangd (fixes annoying highlights)
+--     if client.name == "clangd" and client.server_capabilities.semanticTokensProvider then
+--         client.server_capabilities.semanticTokensProvider = nil
+--     end
+-- end,
+-- })
 
 -- ============================
 -- Capabilities for nvim-cmp

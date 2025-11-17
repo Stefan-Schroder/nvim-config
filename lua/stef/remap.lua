@@ -91,7 +91,7 @@ local function find_current_body() -- Finds the first parent body (could be a fu
     while node do
         local type = node:type()
         print(type)
-        if type == "compound_statement" or "block" then
+        if type == "compound_statement" or type == "block" then
             local start_row, _, end_row, _ = node:range()
             print("start: "..start_row.." end: "..end_row)
             return start_row + 1, end_row + 1

@@ -73,7 +73,7 @@ chat.setup({
             register = '"',
         },
         show_diff = {
-            normal = 'gd'
+            normal = 'gdi'
         },
         show_info = {
             normal = 'gp'

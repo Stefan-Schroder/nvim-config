@@ -64,6 +64,10 @@ return require('packer').startup(function(use)
     use ('tpope/vim-fugitive')
     use ('chrisbra/csv.vim')
     use {
+      'nmac427/guess-indent.nvim',
+      config = function() require('guess-indent').setup {} end,
+    }
+    use {
         'rmagatti/auto-session',
         config = function()
             require("auto-session").setup {

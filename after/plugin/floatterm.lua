@@ -5,7 +5,7 @@ vim.g.floaterm_wintype = 'float' -- Use floating window for floaterm
 vim.g.floaterm_borderchars = '─│─│╭╮╯╰' -- Set border style
 
 -- Key mappings to open/close the terminal
-vim.keymap.set('n', '<leader>t', ':FloatermToggle<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>tf', ':FloatermToggle<CR>', { noremap = true, silent = true })
 vim.keymap.set('t', '<C-q>', '<C-\\><C-n>:FloatermToggle<CR>', { noremap = true, silent = true })
 
 -- Close terminal with Esc in terminal mode
