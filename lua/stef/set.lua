@@ -36,8 +36,9 @@ vim.opt.ignorecase = true
 -- vim.cmd('syntax off')
 
 -- set the timeout of pattern matching
-vim.g.matchparen_timeout = 2
-vim.g.matchparen_insert_timeout = 2
+vim.cmd('filetype plugin on')
+vim.g.matchparen_timeout = 15
+vim.g.matchparen_insert_timeout = 15
 
 -- Enable filetype detection, plugins, and indentation
 vim.cmd('filetype plugin indent on')

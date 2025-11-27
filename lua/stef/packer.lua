@@ -26,18 +26,6 @@ return require('packer').startup(function(use)
         end
     })
 
-    -- Copilot
-    use ('zbirenbaum/copilot.lua')
-    use ('zbirenbaum/copilot-cmp')
-    use ({
-        'CopilotC-Nvim/CopilotChat.nvim', branch = 'main',
-        requires = {
-            { 'zbirenbaum/copilot.lua' },
-            { 'nvim-lua/plenary.nvim' }
-        },
-        build = 'make tiktoken'
-    })
-
     -- For the LSP
     use({'VonHeikemen/lsp-zero.nvim', branch = 'v4.x'})
     use({'neovim/nvim-lspconfig'})

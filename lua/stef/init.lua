@@ -1,7 +1,6 @@
 require("stef.remap")
 require("stef.packer")
 require("stef.set")
--- require("stef.copilot")
 require('telescope').setup{
     defaults = {
         file_ignore_patterns = {
